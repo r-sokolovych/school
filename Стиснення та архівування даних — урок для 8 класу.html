@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Стиснення та архівування даних — урок для 8 класу</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F5FA; --surface:#FFFFFF; --ink:#16223B; --muted:#56637E; --line:#D3DBEA;
+  --accent:#2F55F5; --accent-ink:#FFFFFF; --warm:#E8743B;
+  --good:#0F8F68; --good-bg:#DDF5EB; --bad:#C93A34; --bad-bg:#FCE5E3; --info-bg:#E8EEFC;
+  --c0:#FFD166; --c1:#8ECAE6; --c2:#B7E4B4; --c3:#F5A9C3; --c4:#C5B8F6; --c5:#FFB98E;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1530; --surface:#17223F; --ink:#E8EDFA; --muted:#9AA9C8; --line:#2A3A60;
+    --accent:#7F9AFF; --accent-ink:#0E1530; --warm:#FF9A66;
+    --good:#4CDBA8; --good-bg:#12382F; --bad:#FF8F88; --bad-bg:#44212A; --info-bg:#1E2C52;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1530; --surface:#17223F; --ink:#E8EDFA; --muted:#9AA9C8; --line:#2A3A60;
+  --accent:#7F9AFF; --accent-ink:#0E1530; --warm:#FF9A66;
+  --good:#4CDBA8; --good-bg:#12382F; --bad:#FF8F88; --bad-bg:#44212A; --info-bg:#1E2C52;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px);scroll-behavior:smooth;height:100%}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);
+  font-family:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:1.0625rem;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+h1,h2,h3{font-family:"Unbounded","Onest",system-ui,sans-serif;line-height:1.2;margin:0;font-weight:700;overflow-wrap:anywhere}
+h1{font-size:clamp(1.6rem,5.2vw,2.7rem)}
+h2{font-size:clamp(1.3rem,3.6vw,1.8rem);margin-bottom:.9rem}
+h3{font-size:1.05rem;font-weight:500}
+p{margin:.5rem 0}
+a{color:var(--accent)}
+.wrap{max-width:860px;margin:0 auto;padding:0 1.25rem}
+section{padding:2.6rem 0 .6rem}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:1rem;min-height:56px;padding-top:.3rem;padding-bottom:.3rem}
+.brand{font-family:"Unbounded",sans-serif;font-weight:700;font-size:.9rem;white-space:nowrap}
+.top nav{display:flex;gap:.25rem;overflow-x:auto;flex:1}
+.top nav a{padding:.45rem .7rem;border-radius:.4rem;text-decoration:none;color:var(--ink);font-weight:500;font-size:.95rem;white-space:nowrap}
+.top nav a:hover{background:var(--info-bg)}
+.pill{font-size:.85rem;font-weight:600;padding:.3rem .7rem;border-radius:99px;background:var(--info-bg);white-space:nowrap}
+
+/* hero */
+.hero{padding-top:2.2rem}
+.lead{font-size:1.15rem;max-width:60ch;color:var(--muted);margin-top:.9rem}
+.goals{margin:1.1rem 0 0;padding-left:1.2rem;max-width:62ch}
+.goals li{margin:.2rem 0}
+.demo{margin-top:1.8rem;background:var(--surface);border:2px solid var(--ink);border-radius:.9rem;padding:1.3rem}
+.demo h2{font-size:1.15rem;margin-bottom:.4rem}
+.field{width:100%;font:inherit;font-size:1.1rem;font-weight:600;letter-spacing:.04em;padding:.7rem .9rem;border:2px solid var(--line);border-radius:.5rem;background:var(--paper);color:var(--ink)}
+.field:focus-visible,.btn:focus-visible,.opt:focus-visible,summary:focus-visible,textarea:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:.7rem 0 1rem}
+.chip{font:inherit;font-size:.9rem;padding:.35rem .75rem;border:1px solid var(--line);border-radius:99px;background:var(--surface);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.lbl{font-size:.9rem;color:var(--muted);margin:.9rem 0 .35rem;font-weight:500}
+.tiles{display:flex;flex-wrap:wrap;gap:3px;min-height:2.4rem}
+.tile{display:inline-grid;place-items:center;min-width:2rem;height:2.4rem;padding:0 .35rem;border-radius:.4rem;font-weight:600;color:#16223B;background:var(--c0)}
+.tile.plain{background:var(--paper);border:1px solid var(--line);color:var(--ink)}
+.tile.w{min-width:3rem;padding:0 .6rem}
+.c0{background:var(--c0)}.c1{background:var(--c1)}.c2{background:var(--c2)}.c3{background:var(--c3)}.c4{background:var(--c4)}.c5{background:var(--c5)}
+.bars{display:grid;gap:.45rem;margin-top:1rem}
+.bar-row{display:grid;grid-template-columns:minmax(7.5rem,11rem) 1fr auto;gap:.7rem;align-items:center;font-size:.92rem}
+.bar-track{height:1.1rem;background:var(--paper);border-radius:.3rem;overflow:hidden}
+.bar{height:100%;background:var(--accent);border-radius:.3rem;transition:width .25s}
+.bar.warm{background:var(--warm)}
+.bar.good{background:var(--good)}
+.stat{margin-top:.8rem;font-weight:500}
+.small{font-size:.88rem;color:var(--muted)}
+
+/* theory */
+.defs{display:grid;gap:.8rem;margin:1rem 0}
+.def{background:var(--surface);border:1px solid var(--line);border-radius:.75rem;padding:1rem 1.2rem}
+.def b{display:block;font-family:"Unbounded",sans-serif;font-weight:500;font-size:1rem;margin-bottom:.2rem}
+.formula{background:var(--info-bg);border-radius:.75rem;padding:1rem 1.2rem;margin:1rem 0}
+.formula .f{font-family:"Unbounded",sans-serif;font-size:1.05rem;margin:.3rem 0}
+.mini{display:flex;flex-wrap:wrap;gap:.7rem;align-items:end;margin-top:.8rem}
+.mini label{display:grid;gap:.2rem;font-size:.9rem;color:var(--muted);font-weight:500}
+.mini input{width:8rem;font:inherit;padding:.5rem .6rem;border:2px solid var(--line);border-radius:.5rem;background:var(--surface);color:var(--ink)}
+.mini .out{font-weight:600;padding-bottom:.45rem}
+details{background:var(--surface);border:1px solid var(--line);border-radius:.6rem;padding:.7rem 1.1rem;margin:.6rem 0}
+summary{cursor:pointer;font-weight:600}
+details p{margin:.5rem 0 .2rem}
+
+/* kinds */
+.kinds{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.kind{background:var(--surface);border:1px solid var(--line);border-radius:.75rem;padding:1.1rem 1.2rem}
+.kind.a{border-left:7px solid var(--accent)}
+.kind.b{border-left:7px solid var(--warm)}
+.kind ul{padding-left:1.1rem;margin:.5rem 0 0}
+.kind li{margin:.25rem 0}
+.lossy{margin-top:1.4rem;background:var(--surface);border:1px solid var(--line);border-radius:.9rem;padding:1.2rem}
+.lossy canvas{display:block;width:100%;height:auto;border-radius:.5rem;background:var(--paper)}
+.ctrl{display:grid;gap:.4rem;margin:.9rem 0}
+.ctrl input[type=range]{width:100%;accent-color:var(--accent);height:1.8rem}
+.check{display:flex;gap:.5rem;align-items:center;font-size:.95rem}
+.check input{width:1.2rem;height:1.2rem;accent-color:var(--accent)}
+
+/* tasks */
+.task{background:var(--surface);border:1px solid var(--line);border-radius:.9rem;padding:1.2rem 1.3rem;margin:1.1rem 0}
+.task-h{display:flex;flex-wrap:wrap;gap:.4rem .8rem;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.badge{font-size:.82rem;font-weight:600;padding:.2rem .65rem;border-radius:99px;background:var(--info-bg)}
+.task.done{border-color:var(--good)}
+.task.done .badge{background:var(--good-bg);color:var(--good)}
+.btn{font:inherit;font-weight:600;min-height:44px;padding:.5rem 1.1rem;border-radius:.5rem;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--accent)}
+.btn.ghost.ok{background:var(--good-bg);border-color:var(--good);color:var(--ink)}
+.btn.ghost.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--ink)}
+.btn:disabled{cursor:default;filter:none}
+.btns{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.8rem}
+.opt{display:block;width:100%;text-align:left;font:inherit;padding:.7rem 1rem;margin:.45rem 0;border:2px solid var(--line);border-radius:.5rem;background:var(--surface);color:var(--ink);cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.ok{background:var(--good-bg);border-color:var(--good)}
+.opt.bad{background:var(--bad-bg);border-color:var(--bad)}
+.opt:disabled{cursor:default;color:var(--ink)}
+.fb{margin-top:.7rem;padding:.65rem .9rem;border-radius:.5rem;border-left:5px solid var(--accent);background:var(--info-bg);font-size:.97rem}
+.fb.ok{background:var(--good-bg);border-color:var(--good)}
+.fb.bad{background:var(--bad-bg);border-color:var(--bad)}
+.row{display:grid;grid-template-columns:1fr auto;gap:.4rem 1rem;align-items:center;padding:.75rem 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .fb{grid-column:1/-1;margin-top:.2rem}
+.row-b{display:flex;gap:.5rem;flex-wrap:wrap}
+.code{font-family:"Unbounded",sans-serif;font-size:1.4rem;letter-spacing:.12em;margin:.6rem 0;overflow-wrap:anywhere}
+.qrow{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:.5rem 0}
+.qrow .num{width:7.5rem;font:inherit;padding:.5rem .6rem;border:2px solid var(--line);border-radius:.5rem;background:var(--paper);color:var(--ink)}
+.calc-item{padding:.9rem 0;border-top:1px solid var(--line)}
+.calc-item:first-child{border-top:0}
+
+/* result */
+.res-row{display:grid;grid-template-columns:minmax(8rem,13rem) 1fr auto;gap:.7rem;align-items:center;margin:.5rem 0;font-size:.95rem}
+.sa{display:grid;gap:.7rem;margin:.6rem 0}
+.sa-row{display:flex;flex-wrap:wrap;gap:.4rem .8rem;align-items:center;justify-content:space-between}
+.sa-row .row-b .btn{min-height:40px;padding:.3rem .8rem;font-size:.92rem}
+.btn.sel{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+textarea{width:100%;font:inherit;font-size:.95rem;padding:.7rem;border:2px solid var(--line);border-radius:.5rem;background:var(--paper);color:var(--ink);resize:vertical}
+footer{padding:2.5rem 0 3rem;color:var(--muted);font-size:.9rem}
+
+@media (max-width:680px){
+  .kinds{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+  .bar-row,.res-row{grid-template-columns:1fr auto}
+  .bar-row .bar-track,.res-row .bar-track{grid-column:1/-1;order:3}
+  .top .brand{display:none}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bar{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="brand">Урок інформатики</span>
+    <nav aria-label="Розділи уроку">
+      <a href="#intro">Старт</a><a href="#theory">Теорія</a><a href="#types">Види</a><a href="#tasks">Завдання</a><a href="#result">Підсумок</a>
+    </nav>
+    <span class="pill" id="prog">Виконано: 0 з 6</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ===== Вступ + демо ===== -->
+<section id="intro" class="hero">
+  <h1>Стиснення та архівування даних</h1>
+  <p class="lead">Фільм на дві години вміщується в кишеню, а фото летить у месенджер за секунду. Секрет — стиснення. Почнемо з найпростішого способу: спробуй його сам.</p>
+  <ul class="goals">
+    <li>поясниш, навіщо стискати дані та що таке архів;</li>
+    <li>розрізнятимеш стиснення без втрат і з втратами;</li>
+    <li>стиснеш і розпакуєш рядок методом RLE та порахуєш коефіцієнт стиснення.</li>
+  </ul>
+
+  <div class="demo" aria-labelledby="demoH">
+    <h2 id="demoH">Живе стиснення: метод RLE</h2>
+    <p class="small" style="margin-top:0">Замість «ААААА» записуємо «5А»: скільки разів і який символ. Введи будь-який рядок.</p>
+    <label for="rleIn" class="small">Твій рядок (до 36 символів)</label>
+    <input id="rleIn" class="field" type="text" maxlength="36" value="ААААААББББВВВВВВВВ" autocomplete="off" spellcheck="false">
+    <div class="chips" aria-label="Приклади">
+      <button class="chip" type="button" data-v="ААААААББББВВВВВВВВ">багато повторів</button>
+      <button class="chip" type="button" data-v="КОТИКОТИКОТИКОТИ">немає повторів поспіль</button>
+      <button class="chip" type="button" data-v="ЇЇЇЇЇЇЇЇЇЇЇЇЇЇЇЇ">один символ</button>
+    </div>
+    <div class="lbl">Було (кожен символ — окрема клітинка)</div>
+    <div class="tiles" id="rleOrig"></div>
+    <div class="lbl">Стало (кожна однакова група — одна клітинка)</div>
+    <div class="tiles" id="rleComp"></div>
+    <div class="bars" id="rleBars"></div>
+    <div class="stat" id="rleStat" role="status" aria-live="polite"></div>
+    <p class="small">Умовно: 1 символ = 1 байт, пара «число + символ» = 2 байти. Великі й малі літери вважаються різними.</p>
+  </div>
+</section>
+
+<!-- ===== Теорія ===== -->
+<section id="theory">
+  <h2>Навіщо стискати дані</h2>
+  <p>Кожен файл займає місце на диску й «важить» певну кількість байтів. Стиснення зменшує цей розмір, щоб файли швидше передавалися мережею, займали менше місця й коштували менше трафіку.</p>
+  <div class="defs">
+    <div class="def"><b>Стиснення даних</b>Перетворення даних так, щоб вони займали менше пам’яті. Зворотна дія — розпакування.</div>
+    <div class="def"><b>Архівування</b>Об’єднання одного чи кількох файлів в один файл — архів, зазвичай зі стисненням.</div>
+    <div class="def"><b>Архіватор</b>Програма, що створює та розпаковує архіви: 7-Zip, WinRAR, WinZip. Типові розширення архівів: .zip, .rar, .7z.</div>
+  </div>
+
+  <div class="formula">
+    <strong>Як виміряти, наскільки добре стиснули</strong>
+    <div class="f">K = V₁ ÷ V₂</div>
+    <div class="f">Економія = (1 − V₂ ÷ V₁) · 100%</div>
+    <p class="small" style="margin-top:.2rem">V₁ — розмір до стиснення, V₂ — після. Чим більше K, тим краще стиснення. Приклад: 12 МБ → 3 МБ, тож K = 4, економія 75%.</p>
+    <div class="mini">
+      <label>V₁, МБ<input id="v1" type="number" min="0" step="any" value="12" inputmode="decimal"></label>
+      <label>V₂, МБ<input id="v2" type="number" min="0" step="any" value="3" inputmode="decimal"></label>
+      <div class="out" id="calcOut" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Які ще ідеї використовують архіватори?</summary>
+    <p>Окрім повторів (як у RLE), архіватор може давати частим символам короткі коди, а рідкісним — довші. Так працює метод Гаффмана: якщо літера «О» трапляється найчастіше, її код буде найкоротшим.</p>
+  </details>
+  <details>
+    <summary>Що ще вміє архів, крім стиснення?</summary>
+    <p>Захист паролем, поділ великого архіву на частини (томи) для надсилання, створення саморозпакувального файлу, який відкривається без архіватора.</p>
+  </details>
+  <details>
+    <summary>Чому архів із JPEG або MP3 майже не меншає?</summary>
+    <p>Такі файли вже стиснені. Повторів у них майже не лишилось, тож архіватору нічого скорочувати. Стискати варто текст, таблиці, програми, зображення без стиснення.</p>
+  </details>
+</section>
+
+<!-- ===== Види ===== -->
+<section id="types">
+  <h2>Два види стиснення</h2>
+  <div class="kinds">
+    <div class="kind a">
+      <h3>Без втрат</h3>
+      <p>Після розпакування дані такі самі, як були: байт у байт.</p>
+      <ul>
+        <li>Шукає повтори й замінює їх коротким записом (RLE, словники).</li>
+        <li>Формати: ZIP, 7z, RAR, PNG, FLAC.</li>
+        <li>Для текстів, програм, документів, таблиць.</li>
+        <li>Стиснення помірне: зазвичай у 2–5 разів.</li>
+      </ul>
+    </div>
+    <div class="kind b">
+      <h3>З втратами</h3>
+      <p>Частину даних, яку людина майже не помічає, викидають назавжди.</p>
+      <ul>
+        <li>Відкидає дрібні деталі зображення чи звуки, що їх вухо не чує.</li>
+        <li>Формати: JPEG, MP3, MP4.</li>
+        <li>Для фото, музики, відео.</li>
+        <li>Стиснення сильне: у 10 разів і більше, але оригінал не відновити.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="lossy">
+    <h3>Подивись на втрати на власні очі</h3>
+    <p class="small" style="margin-top:.3rem">Це справжнє JPEG-стиснення у твоєму браузері. Зменшуй якість і стеж за літерами та смужками: саме там з’являються спотворення.</p>
+    <canvas id="cv" width="480" height="300" role="img" aria-label="Малюнок: гори, сонце і табличка з написом «Стиснення». Якість змінюється повзунком."></canvas>
+    <div class="ctrl">
+      <label for="q"><strong>Якість JPEG: <span id="qv">40</span>%</strong></label>
+      <input id="q" type="range" min="1" max="100" value="40">
+      <label class="check"><input type="checkbox" id="orig"> Показати оригінал для порівняння</label>
+    </div>
+    <div class="bars" id="szBars"></div>
+    <div class="stat" id="szStat" role="status" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ===== Завдання ===== -->
+<section id="tasks">
+  <h2>Завдання</h2>
+  <p>Відповіді перевіряються одразу. Якщо помилився, ти отримаєш підказку й зможеш спробувати ще раз: за правильну відповідь з першої спроби — повний бал, з наступних — половина.</p>
+
+  <!-- 1. Тест -->
+  <article class="task" id="t1" data-task="quiz">
+    <div class="task-h"><h3>Завдання 1. Швидкий тест</h3><span class="badge">Не розпочато</span></div>
+    <div id="quiz"></div>
+  </article>
+
+  <!-- 2. Кодування -->
+  <article class="task" id="t2" data-task="encode">
+    <div class="task-h"><h3>Завдання 2. Стисни рядок (RLE)</h3><span class="badge">Не розпочато</span></div>
+    <p>Запиши цей рядок у вигляді пар «число + символ», без пробілів. Наприклад, ААА → 3А.</p>
+    <div class="tiles" id="encStr" aria-label="Рядок для стиснення"></div>
+    <div class="qrow">
+      <label for="encIn" class="small">Твій код:</label>
+      <input id="encIn" class="field" style="max-width:20rem" type="text" autocomplete="off" spellcheck="false">
+      <button class="btn" type="button" id="encBtn">Перевірити</button>
+    </div>
+    <div class="btns" style="margin-top:.2rem">
+      <button class="btn ghost" type="button" id="encShow" hidden>Показати відповідь</button>
+      <button class="btn ghost" type="button" id="encNew" hidden>Тренування: новий рядок</button>
+    </div>
+    <div class="fb" id="encFb" role="status" aria-live="polite" hidden></div>
+  </article>
+
+  <!-- 3. Розпакування -->
+  <article class="task" id="t3" data-task="decode">
+    <div class="task-h"><h3>Завдання 3. Розпакуй код</h3><span class="badge">Не розпочато</span></div>
+    <p>Відновити початковий рядок із RLE-коду. Наприклад, 2К3О → ККООО.</p>
+    <div class="code" id="decCode"></div>
+    <div class="qrow">
+      <label for="decIn" class="small">Початковий рядок:</label>
+      <input id="decIn" class="field" style="max-width:24rem" type="text" autocomplete="off" spellcheck="false">
+      <button class="btn" type="button" id="decBtn">Перевірити</button>
+    </div>
+    <div class="btns" style="margin-top:.2rem">
+      <button class="btn ghost" type="button" id="decShow" hidden>Показати відповідь</button>
+      <button class="btn ghost" type="button" id="decNew" hidden>Тренування: новий код</button>
+    </div>
+    <div class="fb" id="decFb" role="status" aria-live="polite" hidden></div>
+  </article>
+
+  <!-- 4. Формати -->
+  <article class="task" id="t4" data-task="formats">
+    <div class="task-h"><h3>Завдання 4. Розподіли формати</h3><span class="badge">Не розпочато</span></div>
+    <p>Яке стиснення використовує кожен формат?</p>
+    <div id="cls1"></div>
+  </article>
+
+  <!-- 5. Розрахунки -->
+  <article class="task" id="t5" data-task="calc">
+    <div class="task-h"><h3>Завдання 5. Порахуй</h3><span class="badge">Не розпочато</span></div>
+    <p class="small" style="margin-top:0">Формули з розділу «Теорія» можна використати як підказку. Десяткові числа пиши через кому або крапку.</p>
+    <div id="calcBox"></div>
+  </article>
+
+  <!-- 6. Сценарії -->
+  <article class="task" id="t6" data-task="scenarios">
+    <div class="task-h"><h3>Завдання 6. Що обрати в житті</h3><span class="badge">Не розпочато</span></div>
+    <p>Яке стиснення краще підійде в кожній ситуації?</p>
+    <div id="cls2"></div>
+  </article>
+</section>
+
+<!-- ===== Підсумок ===== -->
+<section id="result">
+  <h2>Підсумок і зворотний зв’язок</h2>
+  <div class="task" style="margin-top:0">
+    <h3>Твої результати</h3>
+    <div id="resRows" style="margin-top:.6rem"></div>
+    <div class="stat" id="resMsg" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="task">
+    <h3>Як ти засвоїв тему?</h3>
+    <div class="sa" id="sa"></div>
+    <label for="note" class="small" style="display:block;margin-top:.8rem">Що було найцікавіше або незрозуміле? (необов’язково)</label>
+    <textarea id="note" rows="3" maxlength="400"></textarea>
+    <label for="nm" class="small" style="display:block;margin-top:.8rem">Твоє ім’я (необов’язково)</label>
+    <input id="nm" class="field" style="max-width:20rem;font-weight:500;letter-spacing:0" type="text" maxlength="40" autocomplete="off">
+  </div>
+
+  <div class="task">
+    <h3>Звіт для вчителя</h3>
+    <p class="small" style="margin-top:.2rem">Результати нікуди автоматично не надсилаються. Скопіюй цей текст і передай вчителеві.</p>
+    <textarea id="report" rows="9" readonly></textarea>
+    <div class="btns"><button class="btn" type="button" id="copyBtn">Скопіювати звіт</button></div>
+    <div class="fb" id="copyFb" role="status" aria-live="polite" hidden></div>
+  </div>
+</section>
+
+</main>
+<footer><div class="wrap">Урок: стиснення та архівування даних, 8 клас. Стиснення JPEG у демонстрації виконує сам браузер.</div></footer>
+
+<script>
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const fmt = n => String(Math.round(n * 10) / 10).replace(".", ",");
+function h(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) { if (c == null) continue; e.append(c.nodeType ? c : document.createTextNode(c)); }
+  return e;
+}
+function showFb(el, kind, text) { el.className = "fb " + kind; el.textContent = text; el.hidden = false; }
+
+/* ---------- підсумки по завданнях ---------- */
+const results = {
+  quiz:      { name: "Тест",              total: 4, c: 0, done: 0, link: "#theory" },
+  encode:    { name: "Стиснення RLE",     total: 1, c: 0, done: 0, link: "#intro" },
+  decode:    { name: "Розпакування RLE",  total: 1, c: 0, done: 0, link: "#intro" },
+  formats:   { name: "Формати",           total: 6, c: 0, done: 0, link: "#types" },
+  calc:      { name: "Розрахунки",        total: 3, c: 0, done: 0, link: "#theory" },
+  scenarios: { name: "Ситуації",          total: 6, c: 0, done: 0, link: "#types" }
+};
+const selfAssess = {};
+const topics = ["Навіщо стискати дані та що таке архів", "Стиснення без втрат (RLE)", "Стиснення з втратами (JPEG, MP3)"];
+const levels = ["Зрозуміло", "Майже", "Потрібна допомога"];
+
+function record(key, pts) {
+  const r = results[key];
+  r.c += pts; r.done++;
+  if (r.done >= r.total) {
+    const card = document.querySelector('[data-task="' + key + '"]');
+    card.classList.add("done");
+    card.querySelector(".badge").textContent = "Виконано: " + fmt(r.c) + " з " + r.total;
+  } else {
+    const card = document.querySelector('[data-task="' + key + '"]');
+    card.querySelector(".badge").textContent = "У процесі: " + r.done + " з " + r.total;
+  }
+  refresh();
+}
+function refresh() {
+  const full = Object.values(results).filter(r => r.done >= r.total).length;
+  $("#prog").textContent = "Виконано: " + full + " з 6";
+  renderSummary();
+}
+
+/* ---------- RLE ---------- */
+function rle(arr) {
+  const runs = [];
+  for (const ch of arr) {
+    const last = runs[runs.length - 1];
+    if (last && last.ch === ch) last.n++; else runs.push({ ch, n: 1 });
+  }
+  return runs;
+}
+function tile(text, cls, wide) {
+  return h("span", { class: "tile " + cls + (wide ? " w" : "") }, text === " " ? "␣" : text);
+}
+function barRow(label, value, max, text, cls) {
+  const w = max > 0 ? Math.max(1, Math.round(value / max * 100)) : 0;
+  return h("div", { class: "bar-row" }, h("span", {}, label),
+    h("div", { class: "bar-track" }, h("div", { class: "bar " + (cls || ""), style: "width:" + w + "%" })),
+    h("strong", {}, text));
+}
+function renderRle() {
+  const arr = Array.from($("#rleIn").value);
+  const o = $("#rleOrig"), c = $("#rleComp"), b = $("#rleBars"), st = $("#rleStat");
+  o.replaceChildren(); c.replaceChildren(); b.replaceChildren();
+  if (!arr.length) { st.textContent = "Впиши кілька символів, щоб побачити стиснення."; return; }
+  const runs = rle(arr);
+  runs.forEach((r, i) => {
+    for (let k = 0; k < r.n; k++) o.append(tile(r.ch, "c" + (i % 6)));
+    c.append(tile(r.n + r.ch, "c" + (i % 6), true));
+  });
+  const ob = arr.length, cb = runs.length * 2, max = Math.max(ob, cb);
+  b.append(barRow("Оригінал", ob, max, ob + " байт"), barRow("Після RLE", cb, max, cb + " байт", cb < ob ? "good" : "warm"));
+  const K = ob / cb;
+  if (cb < ob) st.textContent = "K = " + fmt(K) + ". Економія " + Math.round((1 - cb / ob) * 100) + "%: повторів багато, тому код коротший.";
+  else if (cb === ob) st.textContent = "Розмір не змінився: K = 1. Користі від стиснення тут немає.";
+  else st.textContent = "K = " + fmt(K) + ", тобто код довший за оригінал. RLE працює лише там, де символи повторюються поспіль.";
+}
+$("#rleIn").addEventListener("input", renderRle);
+document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { $("#rleIn").value = b.dataset.v; renderRle(); }));
+renderRle();
+
+/* ---------- міні-калькулятор ---------- */
+function renderCalc() {
+  const a = parseFloat($("#v1").value), b = parseFloat($("#v2").value), out = $("#calcOut");
+  if (!(a > 0) || !(b > 0)) { out.textContent = "Введи додатні розміри."; return; }
+  out.textContent = "K = " + fmt(a / b) + "; економія " + fmt((1 - b / a) * 100) + "%";
+}
+$("#v1").addEventListener("input", renderCalc); $("#v2").addEventListener("input", renderCalc); renderCalc();
+
+/* ---------- JPEG-демо ---------- */
+const SW = 480, SH = 300;
+const src = document.createElement("canvas"); src.width = SW; src.height = SH;
+(function drawScene(c) {
+  const g = c.getContext("2d");
+  const sky = g.createLinearGradient(0, 0, 0, 180); sky.addColorStop(0, "#5BA8F0"); sky.addColorStop(1, "#FFE2A8");
+  g.fillStyle = sky; g.fillRect(0, 0, SW, SH);
+  g.fillStyle = "#FFF3B0"; g.beginPath(); g.arc(385, 70, 34, 0, 7); g.fill();
+  g.fillStyle = "#3B5B7A"; g.beginPath(); g.moveTo(0, 190); g.lineTo(110, 80); g.lineTo(200, 170); g.lineTo(290, 100); g.lineTo(400, 190); g.lineTo(480, 140); g.lineTo(480, 300); g.lineTo(0, 300); g.closePath(); g.fill();
+  g.fillStyle = "#2E7D4F"; g.fillRect(0, 205, SW, 95);
+  g.strokeStyle = "#F5F5F5"; g.lineWidth = 1;
+  for (let x = -100; x < 250; x += 6) { g.beginPath(); g.moveTo(x, 300); g.lineTo(x + 100, 212); g.stroke(); }
+  g.fillStyle = "#FFFFFF"; g.fillRect(250, 215, 205, 62);
+  g.fillStyle = "#111111"; g.textBaseline = "middle";
+  g.font = "bold 26px sans-serif"; g.fillText("СТИСНЕННЯ", 264, 237);
+  g.font = "14px sans-serif"; g.fillText("даних із втратами?", 266, 262);
+  for (let i = 0; i < 8; i++) for (let j = 0; j < 4; j++) { g.fillStyle = (i + j) % 2 ? "#111111" : "#FFFFFF"; g.fillRect(20 + i * 8, 20 + j * 8, 8, 8); }
+})(src);
+
+const cv = $("#cv"), cx = cv.getContext("2d");
+let pngSize = 0, rawSize = SW * SH * 3, lastImg = null, token = 0;
+try { pngSize = Math.round((src.toDataURL("image/png").length - 22) * 0.75); } catch (e) { pngSize = 0; }
+const kb = b => Math.round(b / 1024) + " КБ";
+
+function updateJpeg() {
+  const q = +$("#q").value; $("#qv").textContent = q;
+  const my = ++token;
+  let url;
+  try { url = src.toDataURL("image/jpeg", q / 100); } catch (e) { $("#szStat").textContent = "Браузер не дозволив створити JPEG."; return; }
+  const jpg = Math.round((url.length - 23) * 0.75);
+  const img = new Image();
+  img.onload = () => { if (my !== token) return; lastImg = img; if (!$("#orig").checked) { cx.clearRect(0, 0, SW, SH); cx.drawImage(img, 0, 0); } };
+  img.src = url;
+  if ($("#orig").checked) { cx.clearRect(0, 0, SW, SH); cx.drawImage(src, 0, 0); }
+  const bars = $("#szBars"); bars.replaceChildren();
+  bars.append(barRow("Без стиснення", rawSize, rawSize, kb(rawSize), "warm"));
+  if (pngSize) bars.append(barRow("PNG (без втрат)", pngSize, rawSize, kb(pngSize)));
+  bars.append(barRow("JPEG (з втратами)", jpg, rawSize, kb(jpg), "good"));
+  const k = rawSize / jpg;
+  let msg;
+  if (q >= 80) msg = "Різниці з оригіналом майже не видно, а файл уже в " + fmt(k) + " раза менший за вихідний.";
+  else if (q >= 35) msg = "Файл менший у " + fmt(k) + " раза. Придивись до літер: краї вже трохи «розмиті».";
+  else msg = "Файл менший у " + fmt(k) + " раза, але якість погана: навколо літер з’явилися «кубики» та шум. Ці дані втрачено назавжди.";
+  $("#szStat").textContent = msg;
+}
+$("#q").addEventListener("input", () => requestAnimationFrame(updateJpeg));
+$("#orig").addEventListener("change", () => {
+  if ($("#orig").checked) { cx.clearRect(0, 0, SW, SH); cx.drawImage(src, 0, 0); }
+  else if (lastImg) { cx.clearRect(0, 0, SW, SH); cx.drawImage(lastImg, 0, 0); }
+});
+updateJpeg();
+
+/* ---------- нормалізація відповідей ---------- */
+const LAT = { A: "А", B: "В", C: "С", E: "Е", H: "Н", I: "І", K: "К", M: "М", O: "О", P: "Р", T: "Т", X: "Х" };
+const norm = s => s.replace(/\s+/g, "").toUpperCase().replace(/[A-Z]/g, c => LAT[c] || c);
+const LETTERS = ["А", "Б", "В", "К", "М", "О", "Р", "Т", "С", "Н", "Е", "Л"];
+function genRuns(k, min, max) {
+  const runs = []; let prev = "";
+  for (let i = 0; i < k; i++) {
+    let ch; do { ch = LETTERS[Math.floor(Math.random() * LETTERS.length)]; } while (ch === prev);
+    prev = ch; runs.push({ ch, n: min + Math.floor(Math.random() * (max - min + 1)) });
+  }
+  return runs;
+}
+function parsePairs(s) {
+  const out = [], re = /(\d+)(\D)/y; let pos = 0;
+  while (pos < s.length) {
+    re.lastIndex = pos; const m = re.exec(s);
+    if (!m) return null;
+    out.push({ n: +m[1], ch: m[2] }); pos = re.lastIndex;
+  }
+  return out;
+}
+const toStr = runs => runs.map(r => r.ch.repeat(r.n)).join("");
+const toCode = runs => runs.map(r => r.n + r.ch).join("");
+
+/* ---------- Завдання 1: тест ---------- */
+const quiz = [
+  { q: "Що таке архівування?", o: ["Перейменування файлів у папці", "Об’єднання файлів в один файл-архів, зазвичай зі стисненням", "Збільшення роздільної здатності зображення", "Видалення файлів, які давно не відкривали"], a: 1,
+    why: "Архів — це один файл, у який зібрано один чи кілька файлів, як правило, стиснутих." },
+  { q: "Яке розширення НЕ належить архіву?", o: [".zip", ".7z", ".txt", ".rar"], a: 2,
+    why: "Файл .txt — звичайний текст. Архіви мають розширення .zip, .rar, .7z та подібні." },
+  { q: "Чому архів із фотографіями JPEG майже не стає меншим за самі фотографії?", o: ["Архіватори не вміють працювати із зображеннями", "JPEG уже стиснений, повторів майже не лишилося", "Фотографії надто яскраві", "JPEG-файли завжди пошкоджені"], a: 1,
+    why: "Повторне стиснення вже стиснених даних мало що дає: нема чого скорочувати." },
+  { q: "Що відбувається під час стиснення без втрат?", o: ["Частина даних назавжди зникає", "Після розпакування отримуємо точно такі самі дані", "Файл автоматично шифрується", "Файл стає більшим"], a: 1,
+    why: "Саме тому такий метод використовують для текстів, програм і документів." }
+];
+let qi = 0;
+function renderQuiz() {
+  const box = $("#quiz"); box.replaceChildren();
+  if (qi >= quiz.length) {
+    box.append(h("div", { class: "fb " + (results.quiz.c >= 3 ? "ok" : "info") },
+      "Тест завершено: " + results.quiz.c + " з " + quiz.length + ". " + (results.quiz.c === quiz.length ? "Чудово, без жодної помилки!" : "Перечитай розділ «Теорія» та переходь до наступного завдання.")));
+    return;
+  }
+  const q = quiz[qi]; let answered = false;
+  const fb = h("div", { class: "fb", role: "status", "aria-live": "polite", hidden: "" });
+  const next = h("button", { class: "btn", type: "button", hidden: "", onclick: () => { qi++; renderQuiz(); } }, qi === quiz.length - 1 ? "Завершити тест" : "Далі");
+  const opts = q.o.map((t, k) => h("button", { class: "opt", type: "button", onclick: () => pick(k) }, t));
+  function pick(k) {
+    if (answered) return; answered = true;
+    opts.forEach(b => b.disabled = true);
+    opts[q.a].classList.add("ok");
+    if (k === q.a) { showFb(fb, "ok", "Правильно! " + q.why); record("quiz", 1); }
+    else { opts[k].classList.add("bad"); showFb(fb, "bad", "Не зовсім. " + q.why); record("quiz", 0); }
+    next.hidden = false; next.focus();
+  }
+  box.append(h("p", { class: "small", style: "margin:0" }, "Питання " + (qi + 1) + " з " + quiz.length),
+    h("p", { style: "font-weight:600" }, q.q), ...opts, fb, h("div", { class: "btns" }, next));
+}
+renderQuiz();
+
+/* ---------- Завдання 2: стиснення ---------- */
+const enc = { runs: null, attempts: 0, variant: 0, solved: false };
+function newEnc() {
+  enc.runs = genRuns(4, 2, 6); enc.attempts = 0; enc.solved = false;
+  const box = $("#encStr"); box.replaceChildren();
+  Array.from(toStr(enc.runs)).forEach(ch => box.append(tile(ch, "plain")));
+  $("#encIn").value = ""; $("#encFb").hidden = true; $("#encShow").hidden = true; $("#encBtn").disabled = false;
+}
+function checkEnc() {
+  if (enc.solved) return;
+  const s = norm($("#encIn").value), fb = $("#encFb");
+  if (!s) { showFb(fb, "info", "Впиши код: пари «число + символ», наприклад 3А2Б."); return; }
+  const p = parsePairs(s);
+  if (!p) { showFb(fb, "bad", "Код має складатися з пар «число + символ», без зайвих знаків. Приклад: 3А2Б."); return; }
+  enc.attempts++;
+  const t = enc.runs;
+  if (p.length === t.length && p.every((x, i) => x.n === t[i].n && x.ch === t[i].ch)) {
+    enc.solved = true; $("#encBtn").disabled = true;
+    showFb(fb, "ok", "Правильно! Було " + toStr(t).length + " символів, стало " + t.length * 2 + " байтів (K = " + fmt(toStr(t).length / (t.length * 2)) + ").");
+    if (enc.variant === 0) record("encode", enc.attempts === 1 ? 1 : 0.5);
+    $("#encNew").hidden = false; $("#encShow").hidden = true;
+    return;
+  }
+  let msg;
+  if (p.length !== t.length) msg = "Груп однакових символів має бути " + t.length + ", а в тебе " + p.length + ". Порахуй, де символ змінюється.";
+  else {
+    const i = p.findIndex((x, k) => x.ch !== t[k].ch || x.n !== t[k].n);
+    msg = p[i].ch !== t[i].ch ? "Кількість груп вірна, але в групі " + (i + 1) + " символ інший." : "Символи вірні, але в групі " + (i + 1) + " неправильна кількість повторів. Порахуй ще раз.";
+  }
+  showFb(fb, "bad", msg);
+  if (enc.attempts >= 3) $("#encShow").hidden = false;
+}
+$("#encBtn").addEventListener("click", checkEnc);
+$("#encIn").addEventListener("keydown", e => { if (e.key === "Enter") checkEnc(); });
+$("#encShow").addEventListener("click", () => {
+  enc.solved = true; $("#encBtn").disabled = true;
+  showFb($("#encFb"), "info", "Правильна відповідь: " + toCode(enc.runs) + ". Спробуй новий рядок для тренування.");
+  if (enc.variant === 0) record("encode", 0);
+  $("#encShow").hidden = true; $("#encNew").hidden = false;
+});
+$("#encNew").addEventListener("click", () => { enc.variant++; $("#encNew").hidden = true; newEnc(); $("#encIn").focus(); });
+newEnc();
+
+/* ---------- Завдання 3: розпакування ---------- */
+const dec = { runs: null, attempts: 0, variant: 0, solved: false };
+function newDec() {
+  dec.runs = genRuns(3 + Math.floor(Math.random() * 2), 2, 6); dec.attempts = 0; dec.solved = false;
+  $("#decCode").textContent = toCode(dec.runs);
+  $("#decIn").value = ""; $("#decFb").hidden = true; $("#decShow").hidden = true; $("#decBtn").disabled = false;
+}
+function checkDec() {
+  if (dec.solved) return;
+  const s = norm($("#decIn").value), fb = $("#decFb"), t = toStr(dec.runs);
+  if (!s) { showFb(fb, "info", "Впиши рядок, який зашифровано в коді."); return; }
+  dec.attempts++;
+  if (s === t) {
+    dec.solved = true; $("#decBtn").disabled = true;
+    showFb(fb, "ok", "Правильно! Із " + toCode(dec.runs).length + " символів коду відновлено рядок із " + t.length + " символів.");
+    if (dec.variant === 0) record("decode", dec.attempts === 1 ? 1 : 0.5);
+    $("#decNew").hidden = false; $("#decShow").hidden = true; return;
+  }
+  let msg;
+  if (s.length !== t.length) msg = "Довжина рядка має бути " + t.length + " символів, а в тебе " + s.length + ". Додай числа з усіх пар.";
+  else {
+    const i = Array.from(s).findIndex((ch, k) => ch !== t[k]);
+    msg = "Довжина вірна, але символ на позиції " + (i + 1) + " не збігається. Перевір порядок груп.";
+  }
+  showFb(fb, "bad", msg);
+  if (dec.attempts >= 3) $("#decShow").hidden = false;
+}
+$("#decBtn").addEventListener("click", checkDec);
+$("#decIn").addEventListener("keydown", e => { if (e.key === "Enter") checkDec(); });
+$("#decShow").addEventListener("click", () => {
+  dec.solved = true; $("#decBtn").disabled = true;
+  showFb($("#decFb"), "info", "Правильна відповідь: " + toStr(dec.runs) + ". Спробуй новий код для тренування.");
+  if (dec.variant === 0) record("decode", 0);
+  $("#decShow").hidden = true; $("#decNew").hidden = false;
+});
+$("#decNew").addEventListener("click", () => { dec.variant++; $("#decNew").hidden = true; newDec(); $("#decIn").focus(); });
+newDec();
+
+/* ---------- Завдання 4 і 6: класифікація ---------- */
+function buildClassify(mountSel, items, labels, key) {
+  const mount = $(mountSel);
+  items.forEach(it => {
+    const st = { mistakes: 0, done: false };
+    const fb = h("div", { class: "fb", role: "status", "aria-live": "polite", hidden: "" });
+    const btns = labels.map((lab, k) => h("button", { class: "btn ghost", type: "button", onclick: () => choose(k) }, lab));
+    function choose(k) {
+      if (st.done) return;
+      if (k === it.a) {
+        st.done = true; btns.forEach(b => b.disabled = true); btns[k].classList.add("ok");
+        showFb(fb, "ok", "Так. " + it.why); record(key, st.mistakes ? 0.5 : 1);
+      } else {
+        st.mistakes++; btns[k].disabled = true; btns[k].classList.add("bad");
+        showFb(fb, "bad", "Не зовсім. Підказка: чи можна після розпакування відновити дані точно, один в один, і чи важлива кожна дрібниця?");
+      }
+    }
+    mount.append(h("div", { class: "row" }, h("div", {}, it.t), h("div", { class: "row-b" }, btns), fb));
+  });
+}
+const LAB = ["Без втрат", "З втратами"];
+buildClassify("#cls1", [
+  { t: "ZIP", a: 0, why: "Архів ZIP відновлює файли без жодних змін." },
+  { t: "JPEG", a: 1, why: "JPEG відкидає дрібні деталі зображення, яких око майже не помічає." },
+  { t: "PNG", a: 0, why: "PNG зберігає кожен піксель точно, тому він добрий для скриншотів і схем." },
+  { t: "MP3", a: 1, why: "MP3 прибирає звуки, які вухо чує гірше, тому файл значно менший." },
+  { t: "FLAC", a: 0, why: "FLAC — аудіо без втрат: звук після розпакування ідентичний оригіналу." },
+  { t: "MP4 (відео)", a: 1, why: "Відео без втрат було б величезним, тому використовують стиснення з втратами." }
+], LAB, "formats");
+buildClassify("#cls2", [
+  { t: "Вихідний код програми, яку надсилаєш на перевірку", a: 0, why: "Одна втрачена літера зламає програму, тож потрібен архів без втрат." },
+  { t: "Пісня для прослуховування на телефоні", a: 1, why: "Невеликі втрати звуку непомітні в навушниках, а місця економиться багато." },
+  { t: "Фото з екскурсії для шкільного сайту", a: 1, why: "JPEG зменшує файл, і сторінка завантажується швидше." },
+  { t: "Папка з проєктом, яку надсилаєш другові поштою", a: 0, why: "Усі файли мають розпакуватися без змін, тож обираємо ZIP чи 7z." },
+  { t: "Медичний рентген-знімок для діагностики лікарем", a: 0, why: "Дрібні деталі можуть бути важливими, тому втрати недопустимі." },
+  { t: "Відеоролик для соцмережі", a: 1, why: "Без стиснення з втратами відео було б надто великим для публікації." }
+], LAB, "scenarios");
+
+/* ---------- Завдання 5: розрахунки ---------- */
+const calcItems = [
+  { q: "Файл 24 МБ після архівації займає 6 МБ. Чому дорівнює коефіцієнт стиснення K?", ans: 4, unit: "",
+    wrong: { 0.25: "Схоже, ти поділив навпаки. K = початковий розмір ÷ стиснений." },
+    hint: "K = V₁ ÷ V₂", ok: "K = 24 ÷ 6 = 4. Файл став меншим у 4 рази." },
+  { q: "Папка 80 МБ стала архівом на 20 МБ. Скільки відсотків пам’яті заощаджено?", ans: 75, unit: "%",
+    wrong: { 25: "25% — це частка, що лишилась (20 із 80). Заощаджено решту: 100% − 25%." },
+    hint: "Економія = (1 − V₂ ÷ V₁) · 100%", ok: "Архів — це 25% від початкового розміру, тож заощаджено 75%." },
+  { q: "Архів має розмір 15 МБ, а K = 3. Яким був початковий розмір файлів (у МБ)?", ans: 45, unit: "МБ",
+    wrong: { 5: "Тут треба множити, а не ділити: V₁ = K · V₂." },
+    hint: "З K = V₁ ÷ V₂ випливає V₁ = K · V₂", ok: "V₁ = 3 · 15 = 45 МБ." }
+];
+calcItems.forEach((it, idx) => {
+  let attempts = 0, done = false;
+  const inp = h("input", { class: "num", type: "text", inputmode: "decimal", "aria-label": "Відповідь до задачі " + (idx + 1), autocomplete: "off" });
+  const fb = h("div", { class: "fb", role: "status", "aria-live": "polite", hidden: "" });
+  const btn = h("button", { class: "btn", type: "button", onclick: check }, "Перевірити");
+  const hintBtn = h("button", { class: "btn ghost", type: "button", onclick: () => showFb(fb, "info", "Підказка: " + it.hint) }, "Підказка");
+  function check() {
+    if (done) return;
+    const raw = inp.value.trim().replace(",", ".").replace("%", "");
+    const v = parseFloat(raw);
+    if (raw === "" || isNaN(v)) { showFb(fb, "info", "Введи число."); return; }
+    attempts++;
+    if (Math.abs(v - it.ans) < 0.01) {
+      done = true; inp.disabled = true; btn.disabled = true; hintBtn.disabled = true;
+      showFb(fb, "ok", "Правильно! " + it.ok); record("calc", attempts === 1 ? 1 : 0.5);
+    } else showFb(fb, "bad", it.wrong[v] || "Це не те число. Перевір формулу й порядок дій: " + it.hint + ".");
+  }
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+  $("#calcBox").append(h("div", { class: "calc-item" }, h("p", { style: "margin-top:0" }, (idx + 1) + ") " + it.q),
+    h("div", { class: "qrow" }, inp, it.unit ? h("span", { class: "small" }, it.unit) : null, btn, hintBtn), fb));
+});
+
+/* ---------- Підсумок ---------- */
+function renderSummary() {
+  const box = $("#resRows"); box.replaceChildren();
+  let c = 0, t = 0; const weak = [];
+  Object.values(results).forEach(r => {
+    c += r.c; t += r.total;
+    const ratio = r.c / r.total;
+    box.append(h("div", { class: "res-row" }, h("span", {}, r.name),
+      h("div", { class: "bar-track" }, h("div", { class: "bar " + (ratio >= 0.7 ? "good" : "warm"), style: "width:" + Math.round(ratio * 100) + "%" })),
+      h("strong", {}, fmt(r.c) + " з " + r.total)));
+    if (r.done >= r.total && ratio < 0.7) weak.push(r);
+  });
+  const pct = Math.round(c / t * 100);
+  const doneAll = Object.values(results).every(r => r.done >= r.total);
+  const msg = $("#resMsg"); msg.replaceChildren();
+  if (!Object.values(results).some(r => r.done > 0)) msg.append("Результати з’являться, щойно виконаєш завдання.");
+  else {
+    msg.append((doneAll ? "Загальний результат: " : "Поки що набрано: ") + pct + "%. ");
+    if (weak.length) {
+      msg.append("Варто повторити: ");
+      weak.forEach((r, i) => { msg.append(h("a", { href: r.link }, r.name)); if (i < weak.length - 1) msg.append(", "); });
+      msg.append(".");
+    } else if (doneAll) msg.append("Усі теми засвоєно добре.");
+  }
+  $("#report").value = buildReport(pct);
+}
+function buildReport(pct) {
+  const lines = ["Урок: Стиснення та архівування даних (8 клас)", "Учень: " + ($("#nm").value.trim() || "—"), "", "Результати:"];
+  Object.values(results).forEach(r => lines.push("- " + r.name + ": " + fmt(r.c) + " з " + r.total + (r.done < r.total ? " (не завершено)" : "")));
+  lines.push("Разом: " + pct + "%", "", "Самооцінка:");
+  topics.forEach((tp, i) => lines.push("- " + tp + ": " + (selfAssess[i] || "не вказано")));
+  lines.push("", "Коментар: " + ($("#note").value.trim() || "—"));
+  return lines.join("\n");
+}
+(function buildSA() {
+  const sa = $("#sa");
+  topics.forEach((tp, i) => {
+    const btns = levels.map(l => h("button", { class: "btn ghost", type: "button", "aria-pressed": "false", onclick: () => {
+      selfAssess[i] = l; btns.forEach(b => { const on = b.textContent === l; b.classList.toggle("sel", on); b.setAttribute("aria-pressed", on); });
+      renderSummary();
+    } }, l));
+    sa.append(h("div", { class: "sa-row" }, h("span", {}, tp), h("div", { class: "row-b" }, btns)));
+  });
+})();
+$("#note").addEventListener("input", renderSummary);
+$("#nm").addEventListener("input", renderSummary);
+$("#copyBtn").addEventListener("click", async () => {
+  const ta = $("#report"), fb = $("#copyFb");
+  try { await navigator.clipboard.writeText(ta.value); showFb(fb, "ok", "Звіт скопійовано."); return; } catch (e) {}
+  try { ta.select(); const ok = document.execCommand("copy"); showFb(fb, ok ? "ok" : "info", ok ? "Звіт скопійовано." : "Виділи текст у полі та скопіюй вручну."); }
+  catch (e) { showFb(fb, "info", "Виділи текст у полі та скопіюй вручну."); }
+});
+refresh();
+</script>
+</body>
+</html>
